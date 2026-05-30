@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Background circle rose douce -->
+  <circle cx="50" cy="50" r="50" fill="#fce7f3"/>
+  <!-- Oreilles -->
+  <polygon points="15,42 10,5 42,28" fill="#fff" stroke="#f9d0e4" stroke-width="1.5"/>
+  <polygon points="85,42 90,5 58,28" fill="#fff" stroke="#f9d0e4" stroke-width="1.5"/>
+  <!-- Intérieur oreilles -->
+  <polygon points="19,38 16,14 38,30" fill="#f472b6"/>
+  <polygon points="81,38 84,14 62,30" fill="#f472b6"/>
+  <!-- Tête -->
+  <ellipse cx="50" cy="56" rx="38" ry="34" fill="#fff"/>
+  <!-- Yeux -->
+  <circle cx="35" cy="50" r="5" fill="#2d3748"/>
+  <circle cx="65" cy="50" r="5" fill="#2d3748"/>
+  <!-- Reflets yeux -->
+  <circle cx="37" cy="48" r="1.8" fill="#fff"/>
+  <circle cx="67" cy="48" r="1.8" fill="#fff"/>
+  <!-- Joues -->
+  <ellipse cx="22" cy="62" rx="7" ry="4" fill="#fbc2eb" opacity="0.7"/>
+  <ellipse cx="78" cy="62" rx="7" ry="4" fill="#fbc2eb" opacity="0.7"/>
+  <!-- Nez -->
+  <polygon points="47,60 53,60 50,64" fill="#ffb3c6"/>
+  <!-- Bouche -->
+  <path d="M 42 70 Q 50 77 58 70" fill="none" stroke="#2d3748" stroke-width="2.5" stroke-linecap="round"/>
+</svg>
