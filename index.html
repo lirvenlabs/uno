@@ -510,7 +510,7 @@
                         <div class="ticket-info-price"><span id="ticket-cost-display">100</span> RN</div>
                         <div class="ticket-info-stock">En stock : <strong id="tickets-owned">0</strong></div>
                     </div>
-                    <button class="ticket-btn" id="ticket-btn" onclick="buyTicket()">
+                    <button class="ticket-btn" id="ticket-btn" onclick="buyTicket()" ontouchend="event.preventDefault();buyTicket();">
                         <span>＋</span> Acheter
                     </button>
                 </div>
@@ -1511,8 +1511,8 @@
         let comboLevel  = 0;   // 0.0 → 1.0 (remplit la barre)
         let comboDecayId = null;
         const COMBO_FILL_PER_CLICK = 0.038; // ~26 clics pour remplir (~2s à plein régime)
-        const COMBO_DECAY_RATE     = 0.020; // decay soutenu
-        const COMBO_DECAY_DELAY    = 60;    // ms avant decay
+        const COMBO_DECAY_RATE     = 0.038; // decay rapide — dur à conserver x3
+        const COMBO_DECAY_DELAY    = 40;    // ms avant decay — quasi immédiat
 
         let _comboMult = 1; // palier courant avec hysteresis
         function getComboMult() {
@@ -1700,6 +1700,9 @@
             state.tickets++; state.ticketsBought++;
             sfxTicket();
             elScore.innerText = formatNumber(state.score);
+            // Mise à jour immédiate du bouton et compteur sans attendre updateHUD
+            ticketsOwnedEl.innerText = state.tickets;
+            ticketBtn.disabled = state.score < state.ticketCost || state.ticketsBought >= 24;
             updateFormulas(); updateHUD();
         }
 
