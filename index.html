@@ -1192,8 +1192,8 @@
                 osc.start(t); osc.stop(t + 0.1);
                 _audioUnlocked = true;
             } catch(e) { return; }
-            // Démarrer musique dans le même callstack (synchrone)
-            if (!musicStarted && !musicMuted) startMusic();
+            // Démarrer musique dès le premier geste
+            if (!musicStarted) startMusic();
         }
         function ensureAudio() { unlockAudio(); }
         // Attacher en phase capture, AVANT les autres handlers
@@ -1510,9 +1510,9 @@
         /* ── COMBO MULTIPLICATEUR ── */
         let comboLevel  = 0;   // 0.0 → 1.0 (remplit la barre)
         let comboDecayId = null;
-        const COMBO_FILL_PER_CLICK = 0.026; // ~38 clics pour remplir -- exigeant
-        const COMBO_DECAY_RATE     = 0.028; // decay agressif
-        const COMBO_DECAY_DELAY    = 35;    // ms avant decay -- très court
+        const COMBO_FILL_PER_CLICK = 0.032; // ~31 clics pour remplir
+        const COMBO_DECAY_RATE     = 0.024; // decay soutenu
+        const COMBO_DECAY_DELAY    = 50;    // ms avant decay
 
         let _comboMult = 1; // palier courant avec hysteresis
         function getComboMult() {
@@ -1641,8 +1641,14 @@
         }
 
         /* ── CLIC CHAT ── */
+        // Anti-spam multi-touch : max 2 touches simultanées
+        let _activeTouches = 0;
         function clickUno(e) {
-            if (e.type === 'touchstart') e.preventDefault();
+            if (e.type === 'touchstart') {
+                e.preventDefault();
+                _activeTouches = e.touches ? e.touches.length : 1;
+                if (_activeTouches > 2) return; // ignorer si plus de 2 doigts
+            }
             sfxClick();
             state.totalClicks = (state.totalClicks || 0) + 1;
             achExtra.lastActivityTime = Date.now();
