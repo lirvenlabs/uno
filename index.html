@@ -650,17 +650,18 @@
         let musicMuted = false;
         let sfxMuted = false;
 
+        function _createAudioContext() {
+            const AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) return false;
+            audioCtx   = new AC();
+            masterGain = audioCtx.createGain(); masterGain.gain.value = 0.8; masterGain.connect(audioCtx.destination);
+            sfxGain    = audioCtx.createGain(); sfxGain.gain.value = 1.0;    sfxGain.connect(masterGain);
+            musicGain  = audioCtx.createGain(); musicGain.gain.value = 0.18; musicGain.connect(masterGain);
+            return true;
+        }
         function getCtx() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                masterGain = audioCtx.createGain(); masterGain.gain.value = 0.8;
-                masterGain.connect(audioCtx.destination);
-                sfxGain    = audioCtx.createGain(); sfxGain.gain.value = 1.0;
-                sfxGain.connect(masterGain);
-                musicGain  = audioCtx.createGain(); musicGain.gain.value = 0.18;
-                musicGain.connect(masterGain);
-            }
-            if (audioCtx.state === 'suspended') audioCtx.resume();
+            if (!audioCtx) _createAudioContext();
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
             return audioCtx;
         }
 
@@ -1168,40 +1169,40 @@
 
         // ── UNLOCK AUDIO iOS Safari ──
         // iOS Safari exige : AudioContext créé + buffer silencieux joué dans le handler synchrone du geste
-        // ── iOS Safari Audio Unlock ──
-        // Principe : l'AudioContext doit être créé ET avoir joué au moins un son
-        // dans un event handler synchrone déclenché par l'utilisateur.
-        // On utilise un oscillateur à gain 0 (inaudible) pour "activer" le contexte.
+        // ── Audio Unlock — mobile + desktop ──
+        // Règle universelle : AudioContext doit être créé dans un event handler user
+        // et avoir produit au moins un son pour être actif sur iOS/Android
         let _audioUnlocked = false;
-        function unlockAudioiOS() {
+        function unlockAudio() {
             if (_audioUnlocked) return;
             try {
-                const AC = window.AudioContext || window.webkitAudioContext;
-                if (!AC) return;
                 if (!audioCtx) {
-                    audioCtx = new AC();
-                    masterGain = audioCtx.createGain(); masterGain.gain.value = 0.8; masterGain.connect(audioCtx.destination);
-                    sfxGain    = audioCtx.createGain(); sfxGain.gain.value = 1.0;    sfxGain.connect(masterGain);
-                    musicGain  = audioCtx.createGain(); musicGain.gain.value = 0.18; musicGain.connect(masterGain);
+                    if (!_createAudioContext()) return;
                 }
                 if (audioCtx.state === 'suspended') audioCtx.resume();
-                // Oscillateur silencieux — force iOS à activer la chaîne audio
-                const osc = audioCtx.createOscillator();
-                const vol = audioCtx.createGain();
-                vol.gain.value = 0.001; // quasi inaudible mais non-zéro
-                osc.connect(vol); vol.connect(audioCtx.destination);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.001);
+                // Son de déblocage réel (très court, très doux) — requis mobile
+                const ctx = audioCtx;
+                const t   = ctx.currentTime;
+                const osc = ctx.createOscillator();
+                const env = ctx.createGain();
+                osc.frequency.value = 1; // sous le seuil d'audibilité
+                env.gain.setValueAtTime(0.0001, t);
+                env.gain.exponentialRampToValueAtTime(0.00001, t + 0.1);
+                osc.connect(env); env.connect(masterGain);
+                osc.start(t); osc.stop(t + 0.1);
                 _audioUnlocked = true;
-                if (!musicStarted) setTimeout(() => startMusic(), 80);
-            } catch(e) {}
+            } catch(e) { return; }
+            // Démarrer musique dans le même callstack (synchrone)
+            if (!musicStarted && !musicMuted) startMusic();
         }
-        function ensureAudio() { unlockAudioiOS(); }
-        // Premier geste — attaché en capture pour être déclenché avant tout autre handler
-        document.addEventListener('touchstart', unlockAudioiOS, { capture: true, passive: true });
-        document.addEventListener('touchend',   unlockAudioiOS, { capture: true, passive: true });
-        document.addEventListener('click',      unlockAudioiOS, { capture: true, passive: true });
-        // Desktop
-        setTimeout(() => { try { unlockAudioiOS(); } catch(e) {} }, 300);
+        function ensureAudio() { unlockAudio(); }
+        // Attacher en phase capture, AVANT les autres handlers
+        document.addEventListener('touchstart', unlockAudio, { capture: true, passive: true });
+        document.addEventListener('touchend',   unlockAudio, { capture: true, passive: true });
+        document.addEventListener('mousedown',  unlockAudio, { capture: true, passive: true });
+        document.addEventListener('click',      unlockAudio, { capture: true, passive: true });
+        // Desktop : tentative immédiate
+        setTimeout(() => { try { unlockAudio(); } catch(e) {} }, 100);
 
         // Bloquer pinch-zoom Safari iOS
         document.addEventListener('gesturestart',  e => e.preventDefault(), { passive: false });
@@ -1238,8 +1239,8 @@
             document.getElementById('nav-boutique').classList.add('active');
             document.body.classList.add('shop-open');
             sfxShop();
-            // Différer le rendu pour ne pas bloquer l'animation d'ouverture
-            requestAnimationFrame(() => requestAnimationFrame(() => { renderShop(); updateShopColors(); }));
+            // Juste recolorer (le contenu est déjà rendu), après l'animation
+            setTimeout(() => updateShopColors(), 80);
         }
         function closeShop() {
             if (!shopOpen) return;
@@ -1787,7 +1788,7 @@
             } else {
                 clickDisplay.style.display = 'none';
             }
-            updateShopColors();
+            if (shopOpen) updateShopColors();
             updateGrid();
             updateAmbiance();
         }
@@ -2496,8 +2497,8 @@
             overlay.style.pointerEvents = 'all';
             overlay.style.opacity = '1';
             modal.style.transform = 'translateY(0)';
-            // Différer le rendu pour ne pas bloquer l'animation d'ouverture
-            requestAnimationFrame(() => requestAnimationFrame(() => { checkAchievements(); renderAchievements(); }));
+            // Différer le rendu après la fin de l'animation (280ms)
+            setTimeout(() => { checkAchievements(); renderAchievements(); }, 120);
         }
 
         function closeAchievements() {
