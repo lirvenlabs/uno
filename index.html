@@ -1631,7 +1631,9 @@
             if (lastClickTime === 0 || lastClickInterval === 0) return 0;
             if (performance.now() - lastClickTime > CLICK_TIMEOUT) return 0;
             const clicksPerSec = 1000 / lastClickInterval;
-            const valuePerClick = (state.clickPower + (state.clickCpsRatio || 0) * state.passiveIncome) * getComboMult();
+            const rawClick = state.clickPower + (state.clickCpsRatio || 0) * state.passiveIncome;
+            const cappedClick = state.passiveIncome > 0 ? Math.min(rawClick, state.passiveIncome * 2) : rawClick;
+            const valuePerClick = Math.max(1, cappedClick) * getComboMult();
             return clicksPerSec * valuePerClick;
         }
 
@@ -1666,7 +1668,9 @@
             if (achExtra.fastClickWindow.length > (achExtra.fastClicks || 0)) achExtra.fastClicks = achExtra.fastClickWindow.length;
             onComboClick();
             const cpsBonus  = (state.clickCpsRatio || 0) * state.passiveIncome;
-            const baseClick = Math.max(1, Math.round(state.clickPower + cpsBonus));
+            // Cap : un clic ne peut pas valoir plus de 2× le revenu passif/sec
+            const clickCap  = state.passiveIncome > 0 ? state.passiveIncome * 2 : Infinity;
+            const baseClick = Math.max(1, Math.min(Math.round(state.clickPower + cpsBonus), Math.round(clickCap)));
             const totalClick = Math.round(baseClick * getComboMult());
             state.score += totalClick;
             state.totalEarned += totalClick;
