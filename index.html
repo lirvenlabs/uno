@@ -1434,7 +1434,7 @@
                 }
             });
 
-            state.ticketCost = Math.floor(1000 * Math.pow(1.8, state.ticketsBought));
+            state.ticketCost = Math.floor(2500 * Math.pow(2.2, state.ticketsBought));
         }
 
         /* ── AMBIANCE — 8 paliers, de 0 → 1T RN/s ── */
@@ -1510,9 +1510,9 @@
         /* ── COMBO MULTIPLICATEUR ── */
         let comboLevel  = 0;   // 0.0 → 1.0 (remplit la barre)
         let comboDecayId = null;
-        const COMBO_FILL_PER_CLICK = 0.038; // ~26 clics pour remplir (~2s à plein régime)
-        const COMBO_DECAY_RATE     = 0.038; // decay rapide — dur à conserver x3
-        const COMBO_DECAY_DELAY    = 40;    // ms avant decay — quasi immédiat
+        const COMBO_FILL_PER_CLICK = 0.048; // ~21 clics pour remplir
+        const COMBO_DECAY_RATE     = 0.026; // decay soutenu
+        const COMBO_DECAY_DELAY    = 55;    // ms avant decay
 
         let _comboMult = 1; // palier courant avec hysteresis
         function getComboMult() {
