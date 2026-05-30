@@ -36,7 +36,7 @@
             --pink: #f472b6;
             --pink-soft: rgba(244,114,182,0.12);
             --nav-h: 72px;
-            --top-h: 88px;
+            --top-h: 96px;
             /* dark mode adaptive */
             --text-strong: #2d3748;
             --border: #f1f5f9;
@@ -72,7 +72,7 @@
         .top-bar {
             height: var(--top-h); flex-shrink: 0;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 10px 20px 8px;
+            padding: 10px 20px 12px;
             background: var(--surface); border-bottom: 1.5px solid var(--border); z-index: 20;
             position: relative;
         }
@@ -551,13 +551,13 @@
         <div class="letter-paper">
             <div class="letter-deco">🐱✉️</div>
             <div class="letter-text">
-                <p>Alors comme ça, t'as tout retourné…</p>
-                <p>Franchement, je pensais pas que t'irais jusqu'au bout. Sous ce canapé y'avait des trucs qui dataient de 2019, je préfère ne pas savoir.</p>
-                <p>T'as généré des milliards de ronrons, construit des temples, envoyé des vaisseaux dans l'espace — tout ça pour retrouver une chaussette et un noyau d'avocat séché.</p>
-                <p>C'est beau, vraiment.</p>
-                <p>Le jeu continue, les RN s'accumulent. Profite.</p>
+                <p>Chloé.</p>
+                <p>Toi qui cours dans tous les sens et qui as jamais le temps — t'as quand même trouvé le temps de finir ça. Tu m'envoies ravi.</p>
+                <p>Sous ce canapé y'avait le Brésil, une polo blanche, du droit, du matcha et un le soleil :) — quelqu'un a planqué des trucs là-dedans en pensant à toi. Bizarre comme coïncidence.</p>
+                <p>Bref. T'es quelqu'un d'incroyable, j'ai vraiment de la chance de t'avoir rencontrée. Le jeu est fini mais les ronrons continuent haha, tu peux rester là à en accumuler pour le plaisir, y'a pas de raison de s'arrêter !</p>
+                <p style="font-size:0.85em;color:#94a3b8;">P.S. : je sais pas qui t'a fabriqué ce jeu mais il a clairement trop de temps libre.</p>
             </div>
-            <div class="letter-signature">— Uno 🐾</div>
+            <div class="letter-signature">— Uno & Lilian 🐾</div>
         </div>
         <button class="letter-close-btn" onclick="closeLetter()">Fermer la lettre</button>
     </div>
@@ -1266,18 +1266,18 @@
 
         /* ── COLLECTION 5×5 ── */
         const collectionItems = [
-            { icon:'🧸', name:'Gros Ours' },        { icon:'🐟', name:'Sardines' },
-            { icon:'🥭', name:'Mangue' },            { icon:'🎭', name:'Carnaval' },
-            { icon:'🐱', name:'Chaton' },            { icon:'🌡️', name:'Chauffage' },
-            { icon:'☀️', name:'Soleil' },            { icon:'🥑', name:'Avocat' },
-            { icon:'🏋️', name:'Haltère' },           { icon:'🌙', name:'La Nuit' },
-            { icon:'🌊', name:'La Mer' },            { icon:'🍒', name:'Cerises' },
-            { icon:'❤️', name:'Cœur' },              { icon:'⛵', name:'Catamaran' },
-            { icon:'🔵', name:'Du Bleu' },           { icon:'🪷', name:'Lotus' },
-            { icon:'🎵', name:'Musique' },           { icon:'⚖️', name:'Balance' },
-            { icon:'🎪', name:'Cirque' },            { icon:'🫖', name:'Tisane' },
-            { icon:'🚗', name:'Voiture Blanche' },   { icon:'🧘', name:'Yoga' },
-            { icon:'🍵', name:'Matcha' },            { icon:'🌺', name:'Tropiques' },
+            { icon:'🧸', name:'Doudou Ours' },       { icon:'🐟', name:'Une Sardine' },
+            { icon:'🥭', name:'Une Mangue' },         { icon:'🎭', name:'Le Brésil' },
+            { icon:'🐱', name:'Un Chaton' },          { icon:'🌡️', name:'Le Chauffage' },
+            { icon:'☀️', name:'Le Soleil :)' },       { icon:'🥑', name:'Un Avocat' },
+            { icon:'🏋️', name:'Une Haltère' },        { icon:'🌙', name:'La Nuit' },
+            { icon:'🌊', name:'La Mer' },             { icon:'🍒', name:'Des Cerises' },
+            { icon:'❤️', name:'Toi :)' },             { icon:'⛵', name:'Le Catamaran' },
+            { icon:'🔵', name:'Du Bleu' },            { icon:'🪷', name:'Du Lotus' },
+            { icon:'🎵', name:'De La Musique' },      { icon:'⚖️', name:'Du Droit' },
+            { icon:'🎪', name:'Saperlipopette' },     { icon:'🫖', name:'Une Tisane' },
+            { icon:'🚗', name:'Une Polo Blanche' },   { icon:'🧘', name:'Du Yoga' },
+            { icon:'🍵', name:'Du Matcha' },          { icon:'🏖️', name:'La Plage' },
         ];
         const revealed = new Array(24).fill(false);
 
