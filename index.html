@@ -1414,7 +1414,7 @@
             state.passiveIncome = buildings.reduce((s,b) => s + b.baseProd * b.count * b.mult, 0) * globalMult;
             // clickPower = 1 de base (entier), upgrades multiplient mais restent entiers
             state.clickPower    = Math.round(1 * clickMult);
-            state.clickCpsRatio = clickCpsRatio * 0.12; // bonus CPS réduit (12%)
+            state.clickCpsRatio = clickCpsRatio * 0.05; // bonus CPS très limité (5%)
 
             // Débloquer les upgrades dont les conditions sont remplies
             upgrades.forEach(u => {
@@ -1439,7 +1439,7 @@
             { threshold:100000,bg:'#f0fdf4', accent:'#4ade80', sunA:'rgba(80,255,130,0.18)',  sunB:'rgba(40,200,90,0.10)', label:'🌿 Empire Verdoyant',     dark:false },
             { threshold:1e7,   bg:'#eff6ff', accent:'#60a5fa', sunA:'rgba(80,160,255,0.20)',  sunB:'rgba(40,110,255,0.10)', label:'💎 Dimension Azurée',    dark:false },
             { threshold:1e10,  bg:'#faf5ff', accent:'#c084fc', sunA:'rgba(190,80,255,0.22)',  sunB:'rgba(140,40,255,0.12)', label:'🔮 Royaume Mystique',    dark:false },
-            { threshold:1e13,  bg:'#060010', accent:'#f0abfc', sunA:'rgba(240,80,255,0.35)',  sunB:'rgba(100,30,220,0.30)', label:'🌌 Singularité Féline',  dark:true  },
+            { threshold:1e12,  bg:'#060010', accent:'#f0abfc', sunA:'rgba(240,80,255,0.35)',  sunB:'rgba(100,30,220,0.30)', label:'🌌 Singularité Féline',  dark:true  },
         ];
         let currentVibe = -1;
 
@@ -1503,8 +1503,8 @@
         /* ── COMBO MULTIPLICATEUR ── */
         let comboLevel  = 0;   // 0.0 → 1.0 (remplit la barre)
         let comboDecayId = null;
-        const COMBO_FILL_PER_CLICK = 0.048; // ~21 clics pour remplir
-        const COMBO_DECAY_RATE     = 0.026; // decay soutenu
+        const COMBO_FILL_PER_CLICK = 0.052; // ~19 clics pour remplir
+        const COMBO_DECAY_RATE     = 0.024; // decay soutenu
         const COMBO_DECAY_DELAY    = 55;    // ms avant decay
 
         let _comboMult = 1; // palier courant avec hysteresis
