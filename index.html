@@ -77,7 +77,7 @@
             position: relative;
         }
         .score-number { font-size: 2.6rem; font-weight: 800; color: var(--text-strong); line-height: 1; }
-        .score-cps { font-size: 0.88rem; color: var(--pink); font-weight: 700; margin-top: 5px; background: var(--pink-soft); padding: 3px 14px; border-radius: 20px; display: inline-block; }
+        .score-cps { font-size: 0.78rem; color: var(--pink); font-weight: 700; margin-top: 5px; background: var(--pink-soft); padding: 3px 10px; border-radius: 20px; display: inline-block; white-space: nowrap; }
 
         /* ── PAGES ── */
         .pages { flex: 1; overflow: hidden; position: relative; }
@@ -454,7 +454,7 @@
 
     <div class="top-bar">
         <div class="score-number" id="score-display">0</div>
-        <div style="display:flex;gap:6px;align-items:center;margin-top:5px;flex-wrap:wrap;justify-content:center;max-width:calc(100% - 110px);">
+        <div style="display:flex;gap:6px;align-items:center;margin-top:5px;flex-wrap:nowrap;justify-content:center;max-width:calc(100% - 110px);overflow:hidden;">
             <div class="score-cps" id="cps-display">0 RN / sec</div>
             <div class="score-cps" id="click-display" style="display:none;background:rgba(99,102,241,0.12);color:#6366f1;"><span id="click-cps-val">0</span> / sec</div>
         </div>
@@ -1201,8 +1201,8 @@
         document.addEventListener('touchend',   unlockAudio, { capture: true, passive: true });
         document.addEventListener('mousedown',  unlockAudio, { capture: true, passive: true });
         document.addEventListener('click',      unlockAudio, { capture: true, passive: true });
-        // Desktop : tentative immédiate
-        setTimeout(() => { try { unlockAudio(); } catch(e) {} }, 100);
+        // Desktop : tentative immédiate (mobile : au premier touch)
+        setTimeout(() => { try { if (!_audioUnlocked) { _createAudioContext(); if (!musicStarted) startMusic(); _audioUnlocked = true; } } catch(e) {} }, 200);
 
         // Bloquer pinch-zoom Safari iOS
         document.addEventListener('gesturestart',  e => e.preventDefault(), { passive: false });
@@ -1808,8 +1808,7 @@
             state.score -= cost;
             b.count++;
             sfxBuy();
-            elScore.innerText = formatNumber(state.score);
-            updateFormulas(); renderShop(); updateShopColors();
+            patchShopAfterBuy();
         }
 
         let _buyingUpgrade = false;
@@ -1822,28 +1821,25 @@
             u.bought = true;
             achExtra.upgradesBought = (achExtra.upgradesBought || 0) + 1;
             sfxUpgrade();
-            elScore.innerText = formatNumber(state.score);
-            updateFormulas(); renderShop(); updateShopColors();
+            patchShopAfterBuy();
             _buyingUpgrade = false;
         }
 
         function renderShop() {
             shopContainer.innerHTML = '';
-
-            // ── Upgrades en tuiles CC ──
+            // ── Upgrades ──
             const available = upgrades.filter(u => u.unlocked && !u.bought);
             if (available.length > 0) {
                 const hdr = document.createElement('div');
                 hdr.className = 'shop-section-title';
                 hdr.textContent = '⬆️ Améliorations';
                 shopContainer.appendChild(hdr);
-
                 const strip = document.createElement('div');
                 strip.className = 'upgrades-strip';
                 available.forEach(u => {
-                    const canAfford = state.score >= u.cost;
                     const card = document.createElement('div');
-                    card.className = 'upg-card ' + (canAfford ? 'can-afford' : 'cant-afford');
+                    card.className = 'upg-card ' + (state.score >= u.cost ? 'can-afford' : 'cant-afford');
+                    card.dataset.uid = u.id;
                     card.innerHTML =
                         '<div class="upg-card-icon">' + u.icon + '</div>' +
                         '<div class="upg-card-body">' +
@@ -1851,35 +1847,32 @@
                             '<div class="upg-card-desc">' + u.desc + '</div>' +
                             '<div class="upg-card-cost">💰 ' + formatNumber(u.cost) + ' RN</div>' +
                         '</div>';
+                    card.addEventListener('touchend', (e) => { e.preventDefault(); buyUpgrade(u.id); });
                     card.onclick = () => buyUpgrade(u.id);
                     strip.appendChild(card);
                 });
                 shopContainer.appendChild(strip);
             }
-
             // ── Bâtiments ──
             const hdr2 = document.createElement('div');
             hdr2.className = 'shop-section-title';
             hdr2.textContent = '🏗️ Installations';
             shopContainer.appendChild(hdr2);
-
             buildings.forEach((b, index) => {
                 const cost = getCost(b);
                 const isLocked = index > 0 && state.totalEarned < b.baseCost * 0.5;
                 const div = document.createElement('div');
                 div.className = 'building' + (isLocked ? ' locked' : '');
-                div.onclick = () => { if (!isLocked) buyBuilding(index); };
-
+                div.dataset.bidx = index;
                 const lvlBadge = b.count > 0 ? ' <span class="b-lvl">lvl.' + b.count + '</span>' : '';
                 const realProd = b.baseProd * b.mult;
                 const upgBadge = b.mult > 1 ? ' <span class="upg-active">×' + b.mult + '</span>' : '';
-                // Prochain jalon
                 div.innerHTML =
                     '<div class="b-icon"><span>' + b.icon + '</span></div>' +
                     '<div class="b-info">' +
                         '<div class="b-header-info">' +
                             '<span class="b-name">' + (isLocked ? '???' : b.name) + lvlBadge + '</span>' +
-                            '<span class="b-cost">💰 ' + (isLocked ? '???' : formatNumber(cost)) + '</span>' +
+                            '<span class="b-cost' + (state.score < cost && !isLocked ? ' red' : '') + '">💰 ' + (isLocked ? '???' : formatNumber(cost)) + '</span>' +
                         '</div>' +
                         (isLocked ? '' :
                         '<div class="b-stats">' +
@@ -1887,8 +1880,54 @@
                             (b.count > 0 ? '<span class="b-stat-badge total">Total: +' + formatNumber(realProd * b.count) + ' RN/s</span>' : '') +
                         '</div>') +
                     '</div>';
+                if (!isLocked) {
+                    div.addEventListener('touchend', (e) => { e.preventDefault(); buyBuilding(index); });
+                    div.onclick = () => buyBuilding(index);
+                }
                 shopContainer.appendChild(div);
             });
+        }
+
+        // Mise à jour légère sans reconstruire le DOM — pour le spam
+        function patchShopAfterBuy() {
+            updateFormulas();
+            elScore.innerText = formatNumber(state.score);
+            // Mettre à jour chaque bâtiment en place
+            shopContainer.querySelectorAll('.building').forEach(div => {
+                const idx = parseInt(div.dataset.bidx);
+                if (isNaN(idx)) return;
+                const b = buildings[idx];
+                const cost = getCost(b);
+                const canAfford = state.score >= cost;
+                const cs = div.querySelector('.b-cost');
+                if (cs) {
+                    cs.textContent = '💰 ' + formatNumber(cost);
+                    if (canAfford) cs.classList.remove('red'); else cs.classList.add('red');
+                }
+                const lvlEl = div.querySelector('.b-lvl');
+                const nameEl = div.querySelector('.b-name');
+                if (nameEl) {
+                    nameEl.innerHTML = b.name + (b.count > 0 ? ' <span class="b-lvl">lvl.' + b.count + '</span>' : '');
+                }
+                const stats = div.querySelector('.b-stats');
+                if (stats) {
+                    const realProd = b.baseProd * b.mult;
+                    const upgBadge = b.mult > 1 ? ' <span class="upg-active">×' + b.mult + '</span>' : '';
+                    stats.innerHTML =
+                        '<span class="b-stat-badge">+' + formatNumber(realProd) + ' RN/s' + upgBadge + '</span>' +
+                        (b.count > 0 ? '<span class="b-stat-badge total">Total: +' + formatNumber(realProd * b.count) + ' RN/s</span>' : '');
+                }
+            });
+            // Upgrades : juste recolorer
+            const availUpg = upgrades.filter(u => u.unlocked && !u.bought);
+            shopContainer.querySelectorAll('.upg-card').forEach((card, i) => {
+                const u = availUpg[i];
+                if (!u) return;
+                card.className = 'upg-card ' + (state.score >= u.cost ? 'can-afford' : 'cant-afford');
+            });
+            // Si nb upgrades a changé (achat d'une amélio), reconstruire
+            const shownUpg = shopContainer.querySelectorAll('.upg-card').length;
+            if (availUpg.length !== shownUpg) renderShop();
         }
 
         function updateShopColors() {
