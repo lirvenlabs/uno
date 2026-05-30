@@ -466,7 +466,7 @@
 
         <!-- JEU -->
         <div class="page active" id="page-jeu">
-            <div class="big-cat-container" onmousedown="clickUno(event);document.getElementById('big-cat').classList.add('pressed')" ontouchstart="clickUno(event);document.getElementById('big-cat').classList.add('pressed')" onmouseup="releaseCombo();document.getElementById('big-cat').classList.remove('pressed')" ontouchend="releaseCombo();document.getElementById('big-cat').classList.remove('pressed');_touchIdentifier=null;" ontouchcancel="releaseCombo();document.getElementById('big-cat').classList.remove('pressed');_touchIdentifier=null;" style="cursor:pointer;">
+            <div class="big-cat-container" onmousedown="clickUno(event);document.getElementById('big-cat').classList.add('pressed')" ontouchstart="clickUno(event);document.getElementById('big-cat').classList.add('pressed')" onmouseup="releaseCombo();document.getElementById('big-cat').classList.remove('pressed')" ontouchend="releaseCombo();document.getElementById('big-cat').classList.remove('pressed');_touchIdentifier=null;clearTimeout(_touchWatchdog);" ontouchcancel="releaseCombo();document.getElementById('big-cat').classList.remove('pressed');_touchIdentifier=null;clearTimeout(_touchWatchdog);" style="cursor:pointer;">
                 <div class="sunburst-cozy"></div>
                 <div class="game-objects" id="game-objects"></div>
 
@@ -1598,17 +1598,19 @@
         }
 
         function onComboClick() {
-            // Incrémenter la barre
-            comboLevel = Math.min(1, comboLevel + COMBO_FILL_PER_CLICK);
+            // Fill décroissant : facile à démarrer, de plus en plus dur à monter
+            const fillBoost = COMBO_FILL_PER_CLICK * (1 - comboLevel * 0.75);
+            comboLevel = Math.min(1, comboLevel + Math.max(fillBoost, COMBO_FILL_PER_CLICK * 0.12));
             updateComboUI();
-            // Réinitialiser le timer de decay
             if (comboDecayId) clearTimeout(comboDecayId);
             comboDecayId = setTimeout(startComboDecay, COMBO_DECAY_DELAY);
         }
 
         function startComboDecay() {
             if (comboLevel <= 0) return;
-            comboLevel = Math.max(0, comboLevel - COMBO_DECAY_RATE);
+            // Decay croissant : lent en bas, de plus en plus rapide en haut
+            const dynamicDecay = COMBO_DECAY_RATE * (0.4 + comboLevel * 1.6);
+            comboLevel = Math.max(0, comboLevel - dynamicDecay);
             updateComboUI();
             if (comboLevel > 0) {
                 comboDecayId = setTimeout(startComboDecay, 16);
@@ -1644,14 +1646,17 @@
         // Anti-spam multi-touch : max 2 touches simultanées
         let _lastClickTime = 0;
         const CLICK_COOLDOWN_MS = 80; // max ~12 clics/sec quel que soit le nombre de doigts
-        let _touchIdentifier = null; // un seul doigt actif à la fois
+        let _touchIdentifier = null;
+        let _touchWatchdog = null;
 
         function clickUno(e) {
             if (e.type === 'touchstart') {
                 e.preventDefault();
-                // Ignorer si un autre doigt est déjà actif
                 if (_touchIdentifier !== null) return;
                 _touchIdentifier = e.changedTouches[0].identifier;
+                // Watchdog : reset auto si touchend jamais reçu (ex: scroll interrompu)
+                clearTimeout(_touchWatchdog);
+                _touchWatchdog = setTimeout(() => { _touchIdentifier = null; }, 500);
             }
             // Cooldown global — bloque le spam multi-touch
             const now = Date.now();
