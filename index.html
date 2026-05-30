@@ -502,7 +502,7 @@
             <div class="collection-header">
                 <div class="collection-title-row">
                     <span class="collection-title">🎴 Sous le canapé</span>
-                    <span class="collection-count-pill"><span id="revealed-count">0</span> / 25</span>
+                    <span class="collection-count-pill"><span id="revealed-count">0</span> / 24</span>
                 </div>
                 <div class="ticket-card">
                     <div class="ticket-icon-wrap">🎟️</div>
@@ -1169,37 +1169,44 @@
 
         // ── UNLOCK AUDIO iOS Safari ──
         // iOS Safari exige : AudioContext créé + buffer silencieux joué dans le handler synchrone du geste
+        // ── iOS Safari Audio Unlock ──
+        // La seule approche fiable : créer le contexte + jouer un son silencieux
+        // SYNCHRONEMENT dans le premier handler de geste utilisateur
         let _audioUnlocked = false;
         function unlockAudioiOS() {
             if (_audioUnlocked) return;
+            _audioUnlocked = true; // bloquer les appels suivants immédiatement
             try {
                 const AC = window.AudioContext || window.webkitAudioContext;
                 if (!AC) return;
+                // Créer le contexte si pas encore fait
                 if (!audioCtx) {
                     audioCtx = new AC();
                     masterGain = audioCtx.createGain(); masterGain.gain.value = 0.8; masterGain.connect(audioCtx.destination);
-                    sfxGain    = audioCtx.createGain(); sfxGain.gain.value = 1.0;  sfxGain.connect(masterGain);
+                    sfxGain    = audioCtx.createGain(); sfxGain.gain.value = 1.0;    sfxGain.connect(masterGain);
                     musicGain  = audioCtx.createGain(); musicGain.gain.value = 0.18; musicGain.connect(masterGain);
                 }
-                // Jouer un buffer silencieux — OBLIGATOIRE pour débloquer iOS
-                const buf = audioCtx.createBuffer(1, 1, 22050);
+                // Buffer silencieux joué SYNCHRONEMENT — unlock iOS
+                const buf = audioCtx.createBuffer(1, 1, audioCtx.sampleRate);
                 const src = audioCtx.createBufferSource();
                 src.buffer = buf;
                 src.connect(audioCtx.destination);
                 src.start(0);
-                audioCtx.resume().then(() => {
-                    _audioUnlocked = true;
-                    if (!musicStarted) startMusic();
-                }).catch(() => {});
-            } catch(e) {}
+                // Resume si suspendu (peut être async mais le buffer suffit à débloquer)
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume().catch(() => {});
+                }
+            } catch(e) { _audioUnlocked = false; return; }
+            // Démarrer la musique après un court délai pour laisser le contexte s'initialiser
+            setTimeout(() => { if (!musicStarted) startMusic(); }, 50);
         }
-        // Doit être attaché directement sans passive:true pour pouvoir appeler resume()
-        document.addEventListener('touchend', unlockAudioiOS, false);
-        document.addEventListener('touchstart', unlockAudioiOS, false);
-        document.addEventListener('click', unlockAudioiOS, false);
-        // Desktop : essai immédiat
-        setTimeout(() => { try { unlockAudioiOS(); } catch(e) {} }, 200);
         function ensureAudio() { unlockAudioiOS(); }
+        // Attacher sur TOUS les événements de geste possibles
+        ['touchstart','touchend','mousedown','click','keydown'].forEach(evt => {
+            document.addEventListener(evt, unlockAudioiOS, { once: true, passive: true });
+        });
+        // Tentative desktop immédiate
+        setTimeout(() => { try { unlockAudioiOS(); } catch(e) {} }, 300);
 
         /* ── FIN MOTEUR AUDIO ── */
 
@@ -1256,21 +1263,20 @@
 
         /* ── COLLECTION 5×5 ── */
         const collectionItems = [
-            { icon:'🐄', name:'Doudou Vache' },   { icon:'🧸', name:'Gros Ours' },
-            { icon:'🐟', name:'Sardines' },         { icon:'🥭', name:'Mangue' },
-            { icon:'🎭', name:'Carnaval' },          { icon:'🐱', name:'Chaton' },
-            { icon:'🌡️', name:'Chauffage' },        { icon:'☀️', name:'Soleil' },
-            { icon:'🥑', name:'Avocat' },            { icon:'🏋️', name:'Haltère' },
-            { icon:'🌙', name:'La Nuit' },           { icon:'🌊', name:'La Mer' },
-            { icon:'🍒', name:'Cerises' },           { icon:'❤️', name:'Cœur' },
-            { icon:'⛵', name:'Catamaran' },         { icon:'🔵', name:'Du Bleu' },
-            { icon:'🪷', name:'Lotus' },             { icon:'🎵', name:'Musique' },
-            { icon:'⚖️', name:'Balance' },           { icon:'🎪', name:'Cirque' },
-            { icon:'🫖', name:'Tisane' },            { icon:'🚗', name:'Voiture Blanche' },
-            { icon:'🧘', name:'Yoga' },              { icon:'🍵', name:'Matcha' },
-            { icon:'🌺', name:'Tropiques' },
+            { icon:'🧸', name:'Gros Ours' },        { icon:'🐟', name:'Sardines' },
+            { icon:'🥭', name:'Mangue' },            { icon:'🎭', name:'Carnaval' },
+            { icon:'🐱', name:'Chaton' },            { icon:'🌡️', name:'Chauffage' },
+            { icon:'☀️', name:'Soleil' },            { icon:'🥑', name:'Avocat' },
+            { icon:'🏋️', name:'Haltère' },           { icon:'🌙', name:'La Nuit' },
+            { icon:'🌊', name:'La Mer' },            { icon:'🍒', name:'Cerises' },
+            { icon:'❤️', name:'Cœur' },              { icon:'⛵', name:'Catamaran' },
+            { icon:'🔵', name:'Du Bleu' },           { icon:'🪷', name:'Lotus' },
+            { icon:'🎵', name:'Musique' },           { icon:'⚖️', name:'Balance' },
+            { icon:'🎪', name:'Cirque' },            { icon:'🫖', name:'Tisane' },
+            { icon:'🚗', name:'Voiture Blanche' },   { icon:'🧘', name:'Yoga' },
+            { icon:'🍵', name:'Matcha' },            { icon:'🌺', name:'Tropiques' },
         ];
-        const revealed = new Array(25).fill(false);
+        const revealed = new Array(24).fill(false);
 
         /* ── BÂTIMENTS — prod linéaire pur : baseProd × count × mult (upgrades) ── */
         const buildings = [
@@ -1405,7 +1411,7 @@
             state.passiveIncome = buildings.reduce((s,b) => s + b.baseProd * b.count * b.mult, 0) * globalMult;
             // clickPower = 1 de base (entier), upgrades multiplient mais restent entiers
             state.clickPower    = Math.round(1 * clickMult);
-            state.clickCpsRatio = clickCpsRatio * 0.2; // bonus CPS très limité (20%)
+            state.clickCpsRatio = clickCpsRatio * 0.12; // bonus CPS réduit (12%)
 
             // Débloquer les upgrades dont les conditions sont remplies
             upgrades.forEach(u => {
@@ -1494,9 +1500,9 @@
         /* ── COMBO MULTIPLICATEUR ── */
         let comboLevel  = 0;   // 0.0 → 1.0 (remplit la barre)
         let comboDecayId = null;
-        const COMBO_FILL_PER_CLICK = 0.036; // ~28 clics pour remplir
-        const COMBO_DECAY_RATE     = 0.022; // decay soutenu
-        const COMBO_DECAY_DELAY    = 50;    // ms avant decay -- court
+        const COMBO_FILL_PER_CLICK = 0.026; // ~38 clics pour remplir -- exigeant
+        const COMBO_DECAY_RATE     = 0.028; // decay agressif
+        const COMBO_DECAY_DELAY    = 35;    // ms avant decay -- très court
 
         let _comboMult = 1; // palier courant avec hysteresis
         function getComboMult() {
@@ -1665,7 +1671,7 @@
 
         /* ── TICKETS ── */
         function buyTicket() {
-            if (state.ticketsBought >= 25 || state.score < state.ticketCost) { sfxReject(); return; }
+            if (state.ticketsBought >= 24 || state.score < state.ticketCost) { sfxReject(); return; }
             state.score -= state.ticketCost;
             state.tickets++; state.ticketsBought++;
             sfxTicket();
@@ -1725,7 +1731,7 @@
             sfxReveal();
             setTimeout(() => { burstConfetti(cell); updateGrid(); }, 460);
             updateHUD();
-            if (state.revealedCount === 25) setTimeout(() => openLetter(), 700);
+            if (state.revealedCount === 24) setTimeout(() => openLetter(), 700);
         }
 
         /* ── GRILLE ── */
@@ -1760,7 +1766,7 @@
             updateFormulas();
             ticketCostEl.innerText    = formatNumber(state.ticketCost);
             ticketsOwnedEl.innerText  = state.tickets;
-            ticketBtn.disabled        = state.score < state.ticketCost || state.ticketsBought >= 25;
+            ticketBtn.disabled        = state.score < state.ticketCost || state.ticketsBought >= 24;
             revealedCountEl.innerText = state.revealedCount;
             elCps.innerText           = formatNumber(state.passiveIncome) + ' RN / sec';
             const activeCps = getActiveCps();
@@ -2182,7 +2188,7 @@
             });
 
             // Restaurer collection
-            if (data.revealed) data.revealed.forEach((v, i) => { if (i < 25) revealed[i] = v; });
+            if (data.revealed) data.revealed.forEach((v, i) => { if (i < 24) revealed[i] = v; });
 
             // Restaurer hauts faits
             if (data.unlockedAch)  data.unlockedAch.forEach(id => unlockedAch.add(id));
@@ -2258,7 +2264,7 @@
             { id:'t1', cat:'collection', icon:'🎟️', name:'Premier Ticket',        desc:'Acheter votre premier ticket de grattage',        reward:300,        check: s => s.ticketsBought >= 1 },
             { id:'t2', cat:'collection', icon:'🎴', name:'Chercheur de Canapé',   desc:'Révéler 5 cases de la collection',                reward:2000,       check: s => s.revealedCount >= 5 },
             { id:'t3', cat:'collection', icon:'🔍', name:'Fouilleur Acharné',     desc:'Révéler 15 cases de la collection',               reward:15000,      check: s => s.revealedCount >= 15 },
-            { id:'t4', cat:'collection', icon:'🗺️', name:'Explorateur du Fond',   desc:'Révéler les 25 cases — complétion totale',        reward:100000,     check: s => s.revealedCount >= 25 },
+            { id:'t4', cat:'collection', icon:'🗺️', name:'Explorateur du Fond',   desc:'Révéler les 24 cases — complétion totale',        reward:100000,     check: s => s.revealedCount >= 24 },
 
             // ── Pelotes d'or ──
             { id:'g1', cat:'secret',     icon:'🧶', name:'Chasseur de Pelotes',   desc:"Attraper votre première pelote d'or",             reward:5000,       check: (s,x) => x.goldensCaught >= 1 },
