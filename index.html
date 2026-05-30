@@ -1239,8 +1239,8 @@
             document.getElementById('nav-boutique').classList.add('active');
             document.body.classList.add('shop-open');
             sfxShop();
-            // Juste recolorer (le contenu est déjà rendu), après l'animation
-            setTimeout(() => updateShopColors(), 80);
+            renderShop();
+            updateShopColors();
         }
         function closeShop() {
             if (!shopOpen) return;
@@ -1691,6 +1691,7 @@
             state.score -= state.ticketCost;
             state.tickets++; state.ticketsBought++;
             sfxTicket();
+            elScore.innerText = formatNumber(state.score);
             updateFormulas(); updateHUD();
         }
 
@@ -1807,6 +1808,7 @@
             state.score -= cost;
             b.count++;
             sfxBuy();
+            elScore.innerText = formatNumber(state.score);
             updateFormulas(); renderShop(); updateShopColors();
         }
 
@@ -1820,8 +1822,9 @@
             u.bought = true;
             achExtra.upgradesBought = (achExtra.upgradesBought || 0) + 1;
             sfxUpgrade();
+            elScore.innerText = formatNumber(state.score);
             updateFormulas(); renderShop(); updateShopColors();
-            setTimeout(() => { _buyingUpgrade = false; }, 100);
+            _buyingUpgrade = false;
         }
 
         function renderShop() {
@@ -2503,8 +2506,8 @@
             overlay.style.pointerEvents = 'all';
             overlay.style.opacity = '1';
             modal.style.transform = 'translateY(0)';
-            // Différer le rendu après la fin de l'animation (280ms)
-            setTimeout(() => { checkAchievements(); renderAchievements(); }, 120);
+            checkAchievements();
+            renderAchievements();
         }
 
         function closeAchievements() {
@@ -2532,7 +2535,7 @@
             requestAnimationFrame(gameLoop);
         }
 
-        setInterval(updateHUD, 250);
+        setInterval(updateHUD, 100);
         loadGame();
         updateFormulas(); renderShop(); renderGrid(); updateHUD();
         updateTrophyBadge(); checkAchievements();
