@@ -536,7 +536,7 @@
     </nav>
 
     <!-- BOTTOM SHEET BOUTIQUE -->
-    <div class="sheet-overlay" id="sheet-overlay" onclick="closeShop()"></div>
+    <div class="sheet-overlay" id="sheet-overlay"></div>
     <div class="bottom-sheet" id="bottom-sheet">
         <div class="sheet-handle-bar">
             <div class="sheet-handle"></div>
@@ -701,8 +701,12 @@
 
         // Clic sur le chat — grave de base, monte en pitch avec le combo
         let clickPitch = 0;
+        let _lastSfxClick = 0;
         function sfxClick() {
             if (sfxMuted) return;
+            const _n = Date.now();
+            if (_n - _lastSfxClick < 90) return; // throttle son — évite les "poc"
+            _lastSfxClick = _n;
             const ctx = getCtx();
             const t   = ctx.currentTime;
             // Fréquence de base grave, monte jusqu'à ×3 selon combo
@@ -1250,18 +1254,7 @@
             document.getElementById('nav-boutique').classList.remove('active');
             document.body.classList.remove('shop-open');
         }
-        let touchStartY = 0, touchStartScrollTop = 0;
-        const sheet = document.getElementById('bottom-sheet');
-        const shopCont = document.getElementById('shop-container');
-        sheet.addEventListener('touchstart', e => {
-            touchStartY = e.touches[0].clientY;
-            touchStartScrollTop = shopCont ? shopCont.scrollTop : 0;
-        }, { passive: true });
-        sheet.addEventListener('touchmove', e => {
-            const dy = e.touches[0].clientY - touchStartY;
-            // Fermer seulement si on swipe vers le bas ET que le scroll interne est en haut
-            if (dy > 70 && touchStartScrollTop <= 0) closeShop();
-        }, { passive: true });
+        // Fermeture boutique : croix uniquement
 
 
         /* ── ETAT ── */
@@ -1290,17 +1283,17 @@
 
         /* ── BÂTIMENTS — prod linéaire pur : baseProd × count × mult (upgrades) ── */
         const buildings = [
-            { id:'b1',  name:'Grattage Auto',       baseCost:15,           baseProd:0.1,      count:0, icon:'🐾', mult:1 },
-            { id:'b2',  name:'Colloc de Chats',     baseCost:100,          baseProd:0.5,      count:0, icon:'🏠', mult:1 },
-            { id:'b3',  name:'Sieste Premium',      baseCost:500,          baseProd:4,        count:0, icon:'😴', mult:1 },
-            { id:'b4',  name:'Playlist Ronrons',    baseCost:3000,         baseProd:10,       count:0, icon:'🎵', mult:1 },
-            { id:'b5',  name:'Binge-ronron',        baseCost:10000,        baseProd:40,       count:0, icon:'📺', mult:1 },
-            { id:'b6',  name:'Side-hustle Félin',   baseCost:40000,        baseProd:100,      count:0, icon:'💼', mult:1 },
-            { id:'b7',  name:'Startup du Ronron',   baseCost:200000,       baseProd:400,      count:0, icon:'💡', mult:1 },
-            { id:'b8',  name:'Cabinet de Thérapie', baseCost:1666666,      baseProd:6666,     count:0, icon:'🛋️', mult:1 },
-            { id:'b9',  name:'VC Croquettes',       baseCost:123456789,    baseProd:98765,    count:0, icon:'📈', mult:1 },
-            { id:'b10', name:'Hedge Fund Poils',    baseCost:3999999999,   baseProd:999999,   count:0, icon:'🏛️', mult:1 },
-            { id:'b11', name:'Big Miaou Theory',    baseCost:75000000000,  baseProd:10000000, count:0, icon:'⚛️', mult:1 },
+            { id:'b1',  name:'Grattage Auto',       baseCost:20,            baseProd:0.1,      count:0, icon:'🐾', mult:1 },
+            { id:'b2',  name:'Colloc de Chats',     baseCost:250,           baseProd:0.5,      count:0, icon:'🏠', mult:1 },
+            { id:'b3',  name:'Sieste Premium',      baseCost:1500,          baseProd:4,        count:0, icon:'😴', mult:1 },
+            { id:'b4',  name:'Playlist Ronrons',    baseCost:10000,         baseProd:10,       count:0, icon:'🎵', mult:1 },
+            { id:'b5',  name:'Binge-ronron',        baseCost:40000,         baseProd:40,       count:0, icon:'📺', mult:1 },
+            { id:'b6',  name:'Side-hustle Félin',   baseCost:200000,        baseProd:100,      count:0, icon:'💼', mult:1 },
+            { id:'b7',  name:'Startup du Ronron',   baseCost:1500000,       baseProd:400,      count:0, icon:'💡', mult:1 },
+            { id:'b8',  name:'Cabinet de Thérapie', baseCost:15000000,      baseProd:6666,     count:0, icon:'🛋️', mult:1 },
+            { id:'b9',  name:'VC Croquettes',       baseCost:800000000,     baseProd:98765,    count:0, icon:'📈', mult:1 },
+            { id:'b10', name:'Hedge Fund Poils',    baseCost:40000000000,   baseProd:999999,   count:0, icon:'🏛️', mult:1 },
+            { id:'b11', name:'Big Miaou Theory',    baseCost:1000000000000, baseProd:10000000, count:0, icon:'⚛️', mult:1 },
         ];
 
         /* ── UPGRADES — jalons récurrents : 1, 10, 25, 50, 100, 250, 500, 1000 achats ── */
@@ -1392,7 +1385,7 @@
             return (num/1e15).toFixed(2) + ' Qa';
         }
 
-        function getCost(b) { return Math.floor(b.baseCost * Math.pow(1.15, b.count)); }
+        function getCost(b) { return Math.floor(b.baseCost * Math.pow(1.18, b.count)); }
 
         /* ── FORMULAS — Cookie Clicker :
            prod d'un bâtiment = baseProd × count × mult (upgrades cumulés)
@@ -1442,11 +1435,11 @@
             { threshold:0,     bg:'#fdfbf7', accent:'#f472b6', sunA:'rgba(255,179,198,0.15)', sunB:'rgba(255,230,150,0.10)', label:'😴 Sieste profonde',      dark:false },
             { threshold:10,    bg:'#fff7ed', accent:'#fb923c', sunA:'rgba(255,180,80,0.20)',  sunB:'rgba(255,140,40,0.12)', label:'🌅 Le chat se réveille',  dark:false },
             { threshold:100,   bg:'#fff1f2', accent:'#f43f5e', sunA:'rgba(255,80,80,0.18)',   sunB:'rgba(240,60,60,0.10)', label:'🔥 En mode ronron',       dark:false },
-            { threshold:1000,  bg:'#fefce8', accent:'#eab308', sunA:'rgba(255,220,50,0.22)',  sunB:'rgba(240,180,0,0.12)', label:'⭐ Étoile Montante',      dark:false },
-            { threshold:10000, bg:'#f0fdf4', accent:'#4ade80', sunA:'rgba(80,255,130,0.18)',  sunB:'rgba(40,200,90,0.10)', label:'🌿 Empire Verdoyant',     dark:false },
-            { threshold:1e6,   bg:'#eff6ff', accent:'#60a5fa', sunA:'rgba(80,160,255,0.20)',  sunB:'rgba(40,110,255,0.10)', label:'💎 Dimension Azurée',    dark:false },
-            { threshold:1e9,   bg:'#faf5ff', accent:'#c084fc', sunA:'rgba(190,80,255,0.22)',  sunB:'rgba(140,40,255,0.12)', label:'🔮 Royaume Mystique',    dark:false },
-            { threshold:1e12,  bg:'#060010', accent:'#f0abfc', sunA:'rgba(240,80,255,0.35)',  sunB:'rgba(100,30,220,0.30)', label:'🌌 Singularité Féline',  dark:true  },
+            { threshold:5000,   bg:'#fefce8', accent:'#eab308', sunA:'rgba(255,220,50,0.22)',  sunB:'rgba(240,180,0,0.12)', label:'⭐ Étoile Montante',      dark:false },
+            { threshold:100000,bg:'#f0fdf4', accent:'#4ade80', sunA:'rgba(80,255,130,0.18)',  sunB:'rgba(40,200,90,0.10)', label:'🌿 Empire Verdoyant',     dark:false },
+            { threshold:1e7,   bg:'#eff6ff', accent:'#60a5fa', sunA:'rgba(80,160,255,0.20)',  sunB:'rgba(40,110,255,0.10)', label:'💎 Dimension Azurée',    dark:false },
+            { threshold:1e10,  bg:'#faf5ff', accent:'#c084fc', sunA:'rgba(190,80,255,0.22)',  sunB:'rgba(140,40,255,0.12)', label:'🔮 Royaume Mystique',    dark:false },
+            { threshold:1e13,  bg:'#060010', accent:'#f0abfc', sunA:'rgba(240,80,255,0.35)',  sunB:'rgba(100,30,220,0.30)', label:'🌌 Singularité Féline',  dark:true  },
         ];
         let currentVibe = -1;
 
@@ -2587,9 +2580,7 @@
             modal.style.transform = 'translateY(100%)';
         }
 
-        document.getElementById('ach-overlay').addEventListener('click', function(e) {
-            if (e.target === this) closeAchievements();
-        });
+        // Fermeture hauts faits : croix uniquement
 
         // Vérif hauts faits toutes les 5s + à chaque clic
         setInterval(checkAchievements, 5000);
