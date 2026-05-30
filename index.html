@@ -466,7 +466,7 @@
 
         <!-- JEU -->
         <div class="page active" id="page-jeu">
-            <div class="big-cat-container" onmousedown="clickUno(event);document.getElementById('big-cat').classList.add('pressed')" ontouchstart="clickUno(event);document.getElementById('big-cat').classList.add('pressed')" onmouseup="releaseCombo();document.getElementById('big-cat').classList.remove('pressed')" ontouchend="releaseCombo();document.getElementById('big-cat').classList.remove('pressed')" ontouchcancel="releaseCombo();document.getElementById('big-cat').classList.remove('pressed')" style="cursor:pointer;">
+            <div class="big-cat-container" onmousedown="clickUno(event);document.getElementById('big-cat').classList.add('pressed')" ontouchstart="clickUno(event);document.getElementById('big-cat').classList.add('pressed')" onmouseup="releaseCombo();document.getElementById('big-cat').classList.remove('pressed')" ontouchend="releaseCombo();document.getElementById('big-cat').classList.remove('pressed');_touchIdentifier=null;" ontouchcancel="releaseCombo();document.getElementById('big-cat').classList.remove('pressed');_touchIdentifier=null;" style="cursor:pointer;">
                 <div class="sunburst-cozy"></div>
                 <div class="game-objects" id="game-objects"></div>
 
@@ -1510,9 +1510,9 @@
         /* ── COMBO MULTIPLICATEUR ── */
         let comboLevel  = 0;   // 0.0 → 1.0 (remplit la barre)
         let comboDecayId = null;
-        const COMBO_FILL_PER_CLICK = 0.032; // ~31 clics pour remplir
-        const COMBO_DECAY_RATE     = 0.024; // decay soutenu
-        const COMBO_DECAY_DELAY    = 50;    // ms avant decay
+        const COMBO_FILL_PER_CLICK = 0.038; // ~26 clics pour remplir (~2s à plein régime)
+        const COMBO_DECAY_RATE     = 0.020; // decay soutenu
+        const COMBO_DECAY_DELAY    = 60;    // ms avant decay
 
         let _comboMult = 1; // palier courant avec hysteresis
         function getComboMult() {
@@ -1642,13 +1642,21 @@
 
         /* ── CLIC CHAT ── */
         // Anti-spam multi-touch : max 2 touches simultanées
-        let _activeTouches = 0;
+        let _lastClickTime = 0;
+        const CLICK_COOLDOWN_MS = 80; // max ~12 clics/sec quel que soit le nombre de doigts
+        let _touchIdentifier = null; // un seul doigt actif à la fois
+
         function clickUno(e) {
             if (e.type === 'touchstart') {
                 e.preventDefault();
-                _activeTouches = e.touches ? e.touches.length : 1;
-                if (_activeTouches > 2) return; // ignorer si plus de 2 doigts
+                // Ignorer si un autre doigt est déjà actif
+                if (_touchIdentifier !== null) return;
+                _touchIdentifier = e.changedTouches[0].identifier;
             }
+            // Cooldown global — bloque le spam multi-touch
+            const now = Date.now();
+            if (now - _lastClickTime < CLICK_COOLDOWN_MS) return;
+            _lastClickTime = now;
             sfxClick();
             state.totalClicks = (state.totalClicks || 0) + 1;
             achExtra.lastActivityTime = Date.now();
