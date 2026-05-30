@@ -1283,11 +1283,11 @@
 
         /* ── BÂTIMENTS — prod linéaire pur : baseProd × count × mult (upgrades) ── */
         const buildings = [
-            { id:'b1',  name:'Grattage Auto',       baseCost:20,            baseProd:0.1,      count:0, icon:'🐾', mult:1 },
-            { id:'b2',  name:'Colloc de Chats',     baseCost:250,           baseProd:0.5,      count:0, icon:'🏠', mult:1 },
-            { id:'b3',  name:'Sieste Premium',      baseCost:1500,          baseProd:4,        count:0, icon:'😴', mult:1 },
-            { id:'b4',  name:'Playlist Ronrons',    baseCost:10000,         baseProd:10,       count:0, icon:'🎵', mult:1 },
-            { id:'b5',  name:'Binge-ronron',        baseCost:40000,         baseProd:40,       count:0, icon:'📺', mult:1 },
+            { id:'b1',  name:'Grattage Auto',       baseCost:80,            baseProd:0.1,      count:0, icon:'🐾', mult:1 },
+            { id:'b2',  name:'Colloc de Chats',     baseCost:600,           baseProd:0.5,      count:0, icon:'🏠', mult:1 },
+            { id:'b3',  name:'Sieste Premium',      baseCost:4000,          baseProd:4,        count:0, icon:'😴', mult:1 },
+            { id:'b4',  name:'Playlist Ronrons',    baseCost:25000,         baseProd:10,       count:0, icon:'🎵', mult:1 },
+            { id:'b5',  name:'Binge-ronron',        baseCost:120000,        baseProd:40,       count:0, icon:'📺', mult:1 },
             { id:'b6',  name:'Side-hustle Félin',   baseCost:200000,        baseProd:100,      count:0, icon:'💼', mult:1 },
             { id:'b7',  name:'Startup du Ronron',   baseCost:1500000,       baseProd:400,      count:0, icon:'💡', mult:1 },
             { id:'b8',  name:'Cabinet de Thérapie', baseCost:15000000,      baseProd:6666,     count:0, icon:'🛋️', mult:1 },
@@ -1344,15 +1344,15 @@
 
             // Clics — scaling tout au long de la partie
             [
-                { name:'Ergonomie de Patte',    desc:'👆 Clic ×2',              cost:100,           mult:2,    icon:'👆', cond:{ earned:50        }, type:'click' },
-                { name:'Double Tape',           desc:'👆 Clic ×2',              cost:5000,          mult:2,    icon:'👆', cond:{ earned:2500       }, type:'click' },
-                { name:'Triple Frappe',         desc:'🐾 Clic ×3',              cost:50000,         mult:3,    icon:'🐾', cond:{ earned:25000      }, type:'click' },
-                { name:'Patte Turbo',           desc:'⚡ Clic ×5',              cost:500000,        mult:5,    icon:'⚡', cond:{ earned:250000     }, type:'click' },
-                { name:'Patte Cyborg',          desc:'🦾 Clic ×5',              cost:5000000,       mult:5,    icon:'🦾', cond:{ earned:2500000    }, type:'click' },
-                { name:'Frappe Quantique',      desc:'🔬 Clic ×10',             cost:50000000,      mult:10,   icon:'🔬', cond:{ earned:25000000   }, type:'click' },
-                { name:'Singularité du Clic',   desc:'💥 Clic ×10',             cost:500000000,     mult:10,   icon:'💥', cond:{ earned:250000000  }, type:'click' },
-                { name:'Méga-Miaou',            desc:'🌟 Clic ×20',             cost:5000000000,    mult:20,   icon:'🌟', cond:{ earned:2500000000 }, type:'click' },
-                { name:'Transcendance du Tap',  desc:'🌌 Clic ×50',             cost:50000000000,   mult:50,   icon:'🌌', cond:{ earned:25000000000}, type:'click' },
+                { name:'Ergonomie de Patte',    desc:'👆 Clic +2 RN',           cost:150,           mult:2,    icon:'👆', cond:{ earned:50        }, type:'click' },
+                { name:'Double Tape',           desc:'👆 Clic +5 RN',           cost:8000,          mult:2,    icon:'👆', cond:{ earned:3000       }, type:'click' },
+                { name:'Triple Frappe',         desc:'🐾 Clic +15 RN',          cost:80000,         mult:3,    icon:'🐾', cond:{ earned:30000      }, type:'click' },
+                { name:'Patte Turbo',           desc:'⚡ Clic +50 RN',          cost:800000,        mult:5,    icon:'⚡', cond:{ earned:300000     }, type:'click' },
+                { name:'Patte Cyborg',          desc:'🦾 Clic +200 RN',         cost:8000000,       mult:5,    icon:'🦾', cond:{ earned:3000000    }, type:'click' },
+                { name:'Frappe Quantique',      desc:'🔬 Clic +1 000 RN',       cost:80000000,      mult:10,   icon:'🔬', cond:{ earned:30000000   }, type:'click' },
+                { name:'Singularité du Clic',   desc:'💥 Clic +5 000 RN',       cost:800000000,     mult:10,   icon:'💥', cond:{ earned:300000000  }, type:'click' },
+                { name:'Méga-Miaou',            desc:'🌟 Clic +25 000 RN',      cost:8000000000,    mult:20,   icon:'🌟', cond:{ earned:3000000000 }, type:'click' },
+                { name:'Transcendance du Tap',  desc:'🌌 Clic +100 000 RN',     cost:80000000000,   mult:50,   icon:'🌌', cond:{ earned:30000000000}, type:'click' },
                 // Bonus CPS sur clic
                 { name:'Clic Synergique',       desc:'⚙️ Clic = +0.5s de RN passif',  cost:1000000,     mult:0,   icon:'⚙️', cond:{ earned:500000    }, type:'click_cps', ratio:0.5 },
                 { name:'Impulsion Féline',      desc:'🚀 Clic = +1s de RN passif',    cost:25000000,    mult:0,   icon:'🚀', cond:{ earned:10000000  }, type:'click_cps', ratio:1   },
@@ -2360,7 +2360,7 @@
             { id:'z1', cat:'secret',     icon:'💻', name:'Code Secret',           desc:'Utiliser le code de triche',                      reward:999999,     check: (s,x) => x.usedCheat },
             { id:'z2', cat:'secret',     icon:'🐱', name:'Uno te Regarde',        desc:'Ne pas cliquer pendant 3 minutes',              reward:10000,      check: (s,x) => x.idleMinutes >= 3 },
             { id:'z3', cat:'secret',     icon:'🌈', name:'Tous les Vibes',        desc:'Atteindre le dernier stade de vibe',              reward:5000000,    check: (s,x) => x.maxVibe >= 7 },
-            { id:'z4', cat:'secret',     icon:'👑', name:'Mode Dieu',             desc:'Maintenir le combo ×3 pendant 30 secondes',       reward:500000,     check: (s,x) => x.combo3Duration >= 30 },
+            { id:'z4', cat:'secret',     icon:'👑', name:'Mode Dieu',             desc:'Maintenir le combo ×3 pendant 20 secondes',       reward:500000,     check: (s,x) => x.combo3Duration >= 20 },
             { id:'z5', cat:'secret',     icon:'🛒', name:'Accro au Shopping',     desc:'Acheter 10 améliorations',                        reward:50000,      check: (s,x) => x.upgradesBought >= 10 },
             { id:'z6', cat:'secret',     icon:'🎰', name:'Gratteur Compulsif',    desc:'Acheter 10 tickets de grattage',                  reward:30000,      check: s => s.ticketsBought >= 10 },
             { id:'z7', cat:'secret',     icon:'🔁', name:'Dans le Rythme',        desc:'Cliquer 10 fois en moins de 3 secondes',          reward:1000,       check: (s,x) => x.fastClicks >= 10 },
