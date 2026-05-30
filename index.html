@@ -510,7 +510,7 @@
                         <div class="ticket-info-price"><span id="ticket-cost-display">100</span> RN</div>
                         <div class="ticket-info-stock">En stock : <strong id="tickets-owned">0</strong></div>
                     </div>
-                    <button class="ticket-btn" id="ticket-btn" onclick="buyTicket()" ontouchend="event.preventDefault();buyTicket();">
+                    <button class="ticket-btn" id="ticket-btn" onclick="buyTicket()" ontouchstart="this._tx=event.touches[0].clientX;this._ty=event.touches[0].clientY;" ontouchend="var dx=event.changedTouches[0].clientX-this._tx,dy=event.changedTouches[0].clientY-this._ty;if(Math.abs(dx)<8&&Math.abs(dy)<8){event.preventDefault();buyTicket();}">
                         <span>＋</span> Acheter
                     </button>
                 </div>
@@ -1858,7 +1858,14 @@
                             '<div class="upg-card-desc">' + u.desc + '</div>' +
                             '<div class="upg-card-cost">💰 ' + formatNumber(u.cost) + ' RN</div>' +
                         '</div>';
-                    card.addEventListener('touchend', (e) => { e.preventDefault(); buyUpgrade(u.id); });
+                    card.addEventListener('touchstart', (e) => { card._ts = {x: e.touches[0].clientX, y: e.touches[0].clientY}; }, { passive: true });
+                    card.addEventListener('touchend', (e) => {
+                        if (!card._ts) return;
+                        const dx = e.changedTouches[0].clientX - card._ts.x;
+                        const dy = e.changedTouches[0].clientY - card._ts.y;
+                        if (Math.abs(dx) < 8 && Math.abs(dy) < 8) { e.preventDefault(); buyUpgrade(u.id); }
+                        card._ts = null;
+                    });
                     card.onclick = () => buyUpgrade(u.id);
                     strip.appendChild(card);
                 });
@@ -1892,7 +1899,14 @@
                         '</div>') +
                     '</div>';
                 if (!isLocked) {
-                    div.addEventListener('touchend', (e) => { e.preventDefault(); buyBuilding(index); });
+                    div.addEventListener('touchstart', (e) => { div._ts = {x: e.touches[0].clientX, y: e.touches[0].clientY}; }, { passive: true });
+                    div.addEventListener('touchend', (e) => {
+                        if (!div._ts) return;
+                        const dx = e.changedTouches[0].clientX - div._ts.x;
+                        const dy = e.changedTouches[0].clientY - div._ts.y;
+                        if (Math.abs(dx) < 8 && Math.abs(dy) < 8) { e.preventDefault(); buyBuilding(index); }
+                        div._ts = null;
+                    });
                     div.onclick = () => buyBuilding(index);
                 }
                 shopContainer.appendChild(div);
