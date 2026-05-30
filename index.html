@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, shrink-to-fit=no">
     <title>Uno's Cozy Clicker</title>
     <!-- ═══════════════════════════════
          FAVICON — Uno le chat 🐱
@@ -27,7 +27,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Uno's Cozy Clicker">
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <style>
         :root {
             --bg: #fdfbf7;
@@ -46,7 +45,7 @@
             --muted-border: #eaeff5;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; touch-action: pan-x pan-y; }
         /* Perf mobile */
         .sunburst-cozy { will-change: transform; }
         .big-cat { will-change: transform, filter; }
@@ -1207,6 +1206,18 @@
         });
         // Tentative desktop immédiate
         setTimeout(() => { try { unlockAudioiOS(); } catch(e) {} }, 300);
+
+        // Bloquer pinch-zoom Safari iOS
+        document.addEventListener('gesturestart',  e => e.preventDefault(), { passive: false });
+        document.addEventListener('gesturechange', e => e.preventDefault(), { passive: false });
+        document.addEventListener('gestureend',    e => e.preventDefault(), { passive: false });
+        // Bloquer double-tap zoom
+        let _lastTap = 0;
+        document.addEventListener('touchend', e => {
+            const now = Date.now();
+            if (now - _lastTap < 300) e.preventDefault();
+            _lastTap = now;
+        }, { passive: false });
 
         /* ── FIN MOTEUR AUDIO ── */
 
