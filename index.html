@@ -1503,9 +1503,9 @@
         /* ── COMBO MULTIPLICATEUR ── */
         let comboLevel  = 0;   // 0.0 → 1.0 (remplit la barre)
         let comboDecayId = null;
-        const COMBO_FILL_PER_CLICK = 0.062; // ~16 clics pour remplir
-        const COMBO_DECAY_RATE     = 0.020; // decay modéré
-        const COMBO_DECAY_DELAY    = 55;    // ms avant decay
+        const COMBO_FILL_PER_CLICK = 0.085; // ~12 clics pour remplir
+        const COMBO_DECAY_RATE     = 0.016; // decay doux
+        const COMBO_DECAY_DELAY    = 75;    // délai confortable
 
         let _comboMult = 1; // palier courant avec hysteresis
         function getComboMult() {
